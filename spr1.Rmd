@@ -1,0 +1,606 @@
+---
+title: "Raport 1"
+subtitle: "Analiza szeregów czasowych"
+author: "Marcin Bartodziej album 262259 , Adrian Siwak album 242084"
+date: "2023-03-06"
+header-includes:
+   - \usepackage[OT4]{polski}
+   - \usepackage[utf8]{inputenc}
+   - \usepackage{graphicx}
+   - \usepackage{float}
+output: 
+  pdf_document:
+    toc: true
+    fig_caption: yes
+    fig_width: 5 
+    fig_height: 4 
+    number_sections: true
+fontsize: 12pt 
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+	echo = TRUE,
+	fig.align = "center",
+	fig.pos = "H",
+	message = FALSE,
+	warning = FALSE,
+	out.extra = ""
+)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+knitr::opts_chunk$set(fig.pos = "H", out.extra = "", fig.align = "center")
+```
+
+# ZADANIE 2
+
+**Symulacyjna analiza własności rozkładów asymptotycznych estymatorów średniej, autokowariancji i autokorelacji**
+
+-   Rozważamy estymatory parametrów rozkładu stacjonarnego szeregu czasowego drugiego trzędu, w tym
+    -   estymator wartości oczekiwanej $\mu$ -- średnia próbkowa: (\ref{eq:wzor1}) \begin{equation}
+        \label{eq:wzor1}
+        \overline{X}_{n} = \frac{1}{n}\sum_{t=1}^n X_t,
+        \end{equation}
+
+    -   estymator funkcji autokowariancji $\gamma(h)$: (\ref{eq:wzor2}) \begin{equation}
+        \label{eq:wzor2}
+        \hat{\gamma(h)} = \frac{1}{n}\sum_{t=1}^{n-h} (X_{t+h}-\overline{X}_n)(X_{t}-\overline{X}_n),
+        \end{equation} dla $h=0,1,\ldots,n-1$
+
+    -   estymator funkcji autokorelacji $\rho(h)$:
+
+(\ref{eq:wzor3}) \begin{equation}
+\label{eq:wzor3}
+\hat{\rho(h)} = \frac{\hat{\gamma(h)}}{\hat{\sigma^{2}}}=\frac{\hat{\gamma(h)}}{\hat{\gamma(0)}},
+\end{equation} dla $h=0,1,\ldots,n-1$
+
+-   Dokonaj symulacji $50-100$ realizacji szeregu czasowego typu biały szum o długości $n$ (w analizie uwzględnij kilka różnych rozkładów oraz różną długość szeregów ($n$)).
+
+```{r podpunkt_1, echo=TRUE, eval=TRUE}
+library(forecast)
+library(stats)
+k <- 100
+n_1 <- 50
+WN_1_norm  <- matrix(rnorm(n_1*k),n_1,k)
+WN_1_bin<- matrix(sample(c(0,1), size = n_1*k, replace = T),n_1,k)
+n_2 <- 70
+WN_2_norm  <- matrix(rnorm(n_2*k),n_2,k)
+WN_2_bin<- matrix(sample(c(0,1), size = n_2*k, replace = T),n_2,k)
+n_3<-100
+WN_3_norm  <- matrix(rnorm(n_3*k),n_3,k)
+WN_3_bin <- matrix(sample(c(0,1), size = n_3*k, replace = T),n_3,k)
+
+```
+
+-   Wyznacz wartości opisanych powyżej estymatorów, a następnie wykorzystując wybrane narzędzia graficzne zbadaj własności rozkładów asymptotycznych rozważanych estymatorów. W szczególności sprawdź, jaki wpływ na rozkłady tych estymatorów ma długość szeregu n, wyjściowy rozkład białego szum oraz co możemy zaobserwować dla opóźnień h bliskich n.
+
+```{r podpunkt_2_srednie, echo=TRUE, eval=TRUE}
+#średnie
+
+#n=50
+srednie_1_norm <- apply(WN_1_norm, MARGIN=2, FUN=mean)
+srednie_1_bin <- apply(WN_1_bin, MARGIN=2, FUN=mean)
+
+#n=70
+srednie_2_norm <- apply(WN_2_norm, MARGIN=2, FUN=mean)
+srednie_2_bin <- apply(WN_2_bin, MARGIN=2, FUN=mean)
+
+#n=100
+srednie_3_norm <- apply(WN_3_norm, MARGIN=2, FUN=mean)
+srednie_3_bin <- apply(WN_3_bin, MARGIN=2, FUN=mean)
+
+
+```
+
+```{r podpunkt_2_autokowariancja, echo=TRUE, eval=TRUE}
+#autokowariancja
+h.max <- 25 
+acf.matrix.WN_1_norm <- apply(WN_1_norm, 2, function(x)
+  acf(x, lag.max=h.max, type="correlation", plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf.matrix.WN_1_norm <- acf.matrix.WN_1_norm[-1,]
+
+acf.matrix.WN_1_bin <- apply(WN_1_bin, 2, function(x)
+  acf(x, lag.max=h.max, type="correlation", plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf.matrix.WN_1_bin<- acf.matrix.WN_1_bin[-1,]
+
+h.max <- 65
+
+acf.matrix.WN_2_norm <- apply(WN_2_norm, 2, function(x)
+  acf(x, lag.max=h.max, type="correlation", plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf.matrix.WN_2_norm <- acf.matrix.WN_2_norm[-1,]
+
+acf.matrix.WN_2_bin <- apply(WN_2_bin, 2, function(x)
+  acf(x, lag.max=h.max, type="correlation", plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf.matrix.WN_2_bin<- acf.matrix.WN_2_bin[-1,]
+
+h.max <- 95
+acf.matrix.WN_3_norm <- apply(WN_3_norm, 2, function(x)
+  acf(x, lag.max=h.max, type="correlation", plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf.matrix.WN_3_norm <- acf.matrix.WN_3_norm[-1,]
+
+
+acf.matrix.WN_3_bin <- apply(WN_3_bin, 2, function(x)
+  acf(x, lag.max=h.max, type="correlation", plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf.matrix.WN_3_bin <- acf.matrix.WN_3_bin[-1,]
+
+
+```
+
+```{r podpunkt_2, echo=TRUE, eval=TRUE}
+#autokorelacja
+h.max <- 25 
+acf1.matrix.WN_1_norm <- apply(WN_1_norm, 2, function(x)
+  acf(x, lag.max=h.max, plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf1.matrix.WN_1_norm <- acf1.matrix.WN_1_norm[-1,]
+
+acf1.matrix.WN_1_bin <- apply(WN_1_bin, 2, function(x)
+  acf(x, lag.max=h.max, plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf1.matrix.WN_1_bin <- acf1.matrix.WN_1_bin[-1,]
+
+h.max <- 65
+
+acf1.matrix.WN_2_norm <- apply(WN_2_norm, 2, function(x)
+  acf(x, lag.max=h.max, plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf1.matrix.WN_2_norm <- acf1.matrix.WN_2_norm[-1,]
+
+acf1.matrix.WN_2_bin <- apply(WN_2_bin, 2, function(x)
+  acf(x, lag.max=h.max, plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf1.matrix.WN_2_bin <- acf1.matrix.WN_2_bin[-1,]
+
+
+h.max <- 95
+acf1.matrix.WN_3_norm <- apply(WN_3_norm, 2, function(x)
+  acf(x, lag.max=h.max, plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf1.matrix.WN_3_norm <- acf1.matrix.WN_3_norm[-1,]
+
+
+acf1.matrix.WN_3_bin <- apply(WN_3_bin, 2, function(x)
+  acf(x, lag.max=h.max, plot=FALSE)$acf)
+
+# usuwamy ACF(0)
+acf1.matrix.WN_3_bin <- acf1.matrix.WN_3_bin[-1,]
+
+
+```
+
+```{r podpunkt_2_srednie_wykresy_normalne, echo=TRUE, eval=TRUE}
+
+#####################1
+# histogram 
+hist(srednie_1_norm, probability=T, col="lightblue")
+curve(dnorm(x,mean=0,sd=1/sqrt(n_1)), col="red", add=T, lwd=2)
+
+# estymator jądrowy
+dens <- density(srednie_1_norm)
+plot(dens, ylim=c(0,2.5))
+curve(dnorm(x,mean=0,sd=1/sqrt(n_1)), col="red", add=T, lwd=2)
+
+# dystrybuanta empiryczna
+ecdf_1N <- ecdf(srednie_1_norm)
+plot(ecdf_1N)
+curve(pnorm(x,mean=0,sd=1/sqrt(n_1)), col="red", add=T, lwd=2)
+
+# wykresy kwantylowe
+qqnorm(srednie_1_norm)
+qqline(srednie_1_norm)
+
+############################2
+# histogram 
+hist(srednie_2_norm, probability=T, col="lightblue")
+curve(dnorm(x,mean=0,sd=1/sqrt(n_2)), col="red", add=T, lwd=2)
+
+# estymator jądrowy
+dens <- density(srednie_2_norm)
+plot(dens, ylim=c(0,2.5))
+curve(dnorm(x,mean=0,sd=1/sqrt(n_2)), col="red", add=T, lwd=2)
+
+# dystrybuanta empiryczna
+ecdf_2N <- ecdf(srednie_2_norm)
+plot(ecdf_2N)
+curve(pnorm(x,mean=0,sd=1/sqrt(n_2)), col="red", add=T, lwd=2)
+
+# wykresy kwantylowe
+qqnorm(srednie_2_norm)
+qqline(srednie_2_norm)
+
+###########################3
+# histogram 
+hist(srednie_3_norm, probability=T, col="lightblue")
+curve(dnorm(x,mean=0,sd=1/sqrt(n_3)), col="red", add=T, lwd=2)
+
+# estymator jądrowy
+dens <- density(srednie_3_norm)
+plot(dens, ylim=c(0,2.5))
+curve(dnorm(x,mean=0,sd=1/sqrt(n_3)), col="red", add=T, lwd=2)
+
+# dystrybuanta empiryczna
+ecdf_3N <- ecdf(srednie_3_norm)
+plot(ecdf_3N)
+curve(pnorm(x,mean=0,sd=1/sqrt(n_3)), col="red", add=T, lwd=2)
+
+# wykresy kwantylowe
+qqnorm(srednie_3_norm)
+qqline(srednie_3_norm)
+
+```
+
+Z wykresów wynika że własności empiryczne są zbliżone do teoretycznych.
+
+```{r podpunkt_2_srednie_wykresy_binarne, echo=TRUE, eval=TRUE}
+
+#####################1
+
+
+# dystrybuanta empiryczna
+ecdf_1B <- ecdf(srednie_1_bin)
+plot(ecdf_1B)
+curve(pnorm(x,mean=0,sd=1/sqrt(n_1)), col="red", add=T, lwd=2)
+
+# wykresy kwantylowe
+qqnorm(srednie_1_bin)
+qqline(srednie_1_bin)
+
+############################2
+
+
+# dystrybuanta empiryczna
+ecdf_2B <- ecdf(srednie_2_bin)
+plot(ecdf_2B)
+curve(pnorm(x,mean=0,sd=1/sqrt(n_2)), col="red", add=T, lwd=2)
+
+# wykresy kwantylowe
+qqnorm(srednie_2_bin)
+qqline(srednie_2_bin)
+
+###########################3
+
+
+# dystrybuanta empiryczna
+ecdf_3B <- ecdf(srednie_3_bin)
+plot(ecdf_3B)
+curve(pnorm(x,mean=0,sd=1/sqrt(n_3)), col="red", add=T, lwd=2)
+
+# wykresy kwantylowe
+qqnorm(srednie_3_bin)
+qqline(srednie_3_bin)
+
+```
+
+Z wykresu możemy zauważyć że estymatory mają rozkład asymptotycznie normalny.
+
+```{r podpunkt_2_Autokowariancja_wykresy, echo=TRUE, eval=TRUE}
+
+h.wybrane <- c(1, 5, 10, 25)
+# histogramy dla ACF(h)
+par(mfrow=c(2,2))
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf.matrix.WN_1_norm[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(50)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf.matrix.WN_1_bin[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(50)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+
+
+h.wybrane <- c(1, 10, 30, 60)
+# histogramy dla ACF(h)
+par(mfrow=c(2,2))
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf.matrix.WN_2_norm[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(70)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf.matrix.WN_2_bin[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(70)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+h.wybrane <- c(1, 20, 50, 90)
+# histogramy dla ACF(h)
+par(mfrow=c(2,2))
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf.matrix.WN_3_norm[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(100)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf.matrix.WN_3_bin[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(100)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+```
+
+```{r podpunkt_2_Autokorelacja_wykresy, echo=TRUE, eval=TRUE}
+
+h.wybrane <- c(1, 5, 10, 25)
+# histogramy dla ACF(h)
+par(mfrow=c(2,2))
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf1.matrix.WN_1_norm[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(50)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf1.matrix.WN_1_bin[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(50)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+
+
+h.wybrane <- c(1, 10, 30, 60)
+# histogramy dla ACF(h)
+par(mfrow=c(2,2))
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf1.matrix.WN_2_norm[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(70)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf1.matrix.WN_2_bin[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(70)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+h.wybrane <- c(1, 20, 50, 90)
+# histogramy dla ACF(h)
+par(mfrow=c(2,2))
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf1.matrix.WN_3_norm[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(100)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+
+
+for (h in h.wybrane)
+{
+	print(paste0("h=",h))
+	tytul <- paste0("Histogram dla acf(",h,")")
+	acf.h <- acf1.matrix.WN_3_bin[h,]
+	hist( acf.h, freq=FALSE, col="lightblue", main=tytul, xlab="")
+	curve(dnorm(x,mean=mean(acf.h), sd=sd(acf.h)), add=T, col="blue", lwd=2)
+	curve(dnorm(x,mean=0, sd=1/sqrt(100)), add=T, col="red", lwd=2)
+	print(summary( acf.h ))
+}
+```
+
+Wraz ze wzrostem wartości opóźnienia wykresy gęstości przestają się pokrywać.
+
+```{r podpunkt_3, echo=TRUE, eval=TRUE}
+# parametry analizy
+n <- 100             # długość białego szumu (WN(0,sigma^2)) 
+k <- 100            # liczba realizacji 
+sigma <- 1          # sigma dla białego szumu 
+ile.powtorz <- 1000 # liczba powtórzeń eksperymentu
+ 
+
+
+
+
+
+meanH0 <- 0
+sdH0   <- sigma/sqrt(n) 
+
+
+# deklaracja wektorow wynikowych
+wynik.ks1 <- numeric(ile.powtorz)
+wynik.sw1 <- numeric(ile.powtorz)
+wynik.ks2 <- numeric(ile.powtorz)
+wynik.sw2 <- numeric(ile.powtorz)
+for (i in 1:ile.powtorz)
+{
+  # generujemy k realizacji białego szumu i wyznaczamy średnie
+  realizacje1 <- matrix(rnorm(n*k, mean=0, sd=sigma),n,k)
+  realizacje2<- matrix(sample(c(0,1), size = n*k, replace = T),n,k)
+  srednie1    <- apply(realizacje1, 2, mean)
+  srednie2    <- apply(realizacje2, 2, mean)
+  # testujemy zgodność z rozkładem normalnym
+  wynik.ks1[i] <- ks.test(srednie1,"pnorm", mean=meanH0, sd=sdH0)$p.value>0.05
+  wynik.sw1[i] <- shapiro.test(srednie1)$p.value>0.05
+  wynik.ks2[i] <- ks.test(srednie2,"pnorm", mean=meanH0, sd=sdH0)$p.value>0.05
+  wynik.sw2[i] <- shapiro.test(srednie2)$p.value>0.05
+}
+
+# częstości przyjęcia H0
+(ks.norm<-sum(wynik.ks1)/ile.powtorz)
+(sw.norm<-sum(wynik.sw1)/ile.powtorz)
+(ks.bin<-sum(wynik.ks2)/ile.powtorz)
+(sw.bin<-sum(wynik.sw2)/ile.powtorz)
+```
+
+Test Kołmogorowa-Smirnowa przeprowadzony dla białego szumu o rozkładzie binarnym daje wynik 0 we wszystkich powtórzeniach, ponieważ hipoteza zerowa sprawdza czy wartości pochodzą z populacji o rozkładach ciągłych.
+
+W pozostałych przypadkach wyniki są większe niż 1 minus poziom istotności dla rozkładu normalnego, oraz powyżej 0.9 dla rozkładu binarnego, może oznaczać to że rozkład binarny dąży asymptotycznie wolniej do rozkładu normalnego.
+
+# Zadanie 3 
+
+W tym miejscu zaimplementujemy graficzny test białoszumowości, oparty na wartości funkcji autokorelacji. Przypomnijmy warunki, które muszą być spełnione, aby szereg można było uznać za reprezentację białego szumu:
+
+1.  autokorelacja musi się mieścić w przedziale [$-3\sigma$, $3\sigma$] dla każdej wartości opóźnienia.
+
+2.  autokorelacja musi się mieścić w przedziale [$-\sigma$, $\sigma$] dla przynajmniej 95% różnych wartości opóźnienia.
+
+Funkcja została napisana w następujący sposób.
+
+```{r zadanie3, echo=TRUE, eval=TRUE}
+test_graf = function(szer) {
+  n = length(szer)
+  auto_cor_f = acf(szer, lag.max = floor(n/4), plot = F)$acf
+  auto_cor_f = auto_cor_f[2:length(auto_cor_f)]
+  
+  ogr_1_sigma = auto_cor_f < 1.96/sqrt(n) & auto_cor_f > -1.96/sqrt(n)
+  war_1_sigma = (sum(ogr_1_sigma)/length(auto_cor_f)) > 0.95
+  
+  ogr_3_sigma = auto_cor_f < 3*1.96/sqrt(n) & auto_cor_f > -3*1.96/sqrt(n)
+  war_3_sigma = sum(ogr_3_sigma) == length(auto_cor_f)
+  
+  return(war_1_sigma & war_3_sigma)}
+```
+
+W celu sprawdzenia, czy funkcja działa poprawnie, wywołamy ją dla 2 szeregów czasowych: szer1 jest reprezentacją białego szumu, natomiast szer2 - nie jest.
+
+```{r zadanie3.1, echo=TRUE, eval=TRUE}
+szer1 = rnorm(100)
+szer2 = cumsum(szer1)
+```
+
+Sprawdźmy działanie funkcji na tych 2 szeregach.
+
+```{r zadanie3.2, echo=TRUE, eval=TRUE}
+test_graf(szer1)
+test_graf(szer2)
+```
+
+Funkcja poprawnie rozpoznała biały szum, zatem możemy sądzić, że jest poprawnie napisana.
+
+## Test formalny 
+
+W tej podsekcji napiszemy funkcję przeprowadzającą test białoszumowości, z wykorzystaniem wartości statystyk testowych Boxa-Pierce oraz Ljungi-Boxa, na podanym poziomie istotności. Funkcja przyjmuje jako argumenty szereg czasowy, poziom istotności (domyślnie 0.05) oraz metodę Boxa-Pierca lub Ljungi-Boxa (domyślnie pierwsza). Zwracana wartośc to bool, mówiący czy podany szereg został rozpoznany jako biały szum.
+
+```{r zadanie3.test.formalny, echo=TRUE, eval=TRUE}
+test_form = function(szer, poz_ist=0.05, metoda="Box-Pierce") {
+  stat = Box.test(szer, type = metoda)
+  wart_stat = as.numeric(stat$statistic)
+  deg_freedom = as.numeric(stat$parameter)
+  p_wart = pchisq(wart_stat, deg_freedom, lower.tail = F)
+  return(p_wart > poz_ist)
+}
+```
+
+Do sprawdzenia poprawności kodu wykorzystamy wcześniejsze 2 przykłady szeregów czasowych
+
+```{r zadanie3.test.formalny1, echo=TRUE, eval=TRUE}
+test_form(szer1)
+test_form(szer2)
+```
+
+Sprawdźmy dla innych poziomów istotności oraz dla metody Ljungi-Boxa.
+
+```{r zadanie3.test.formalnyLB, echo=TRUE, eval=TRUE}
+test_form(szer1, 0.1, "Box-Pierce")
+test_form(szer2, 0.1, "Box-Pierce")
+
+test_form(szer1, 0.15, "Ljung-Box")
+test_form(szer2, 0.15, "Ljung-Box")
+```
+
+W każdym z przypadków otrzymaliśmy spodziewany wynik, więc możemy uznać, że test został zaimplementowany poprawnie.
+
+## Porównanie podejścia graficznego i formalnego 
+
+W tej części przetestujemy podejście formalne oraz graficzne na szeregach czasowych pochodzących z różnych rozkładów i o różnych długościach.
+
+```{r zadanie3.test., echo=TRUE, eval=TRUE}
+set.seed(2)
+szer_norm_30 = rnorm(30)
+szer_norm_150 = rnorm(150)
+szer_unif_30 = runif(30)
+szer_unif_150 = runif(150)
+szer_chi_30 = rchisq(30, df=3)
+szer_chi_150 = rchisq(150, df=3)
+szer_dep = cumsum(szer_unif_150 + szer_norm_150)  # zmienne zależne
+
+szer_list = cbind(szer_norm_30, szer_norm_150, szer_unif_30,
+              szer_unif_150, szer_chi_30, szer_chi_150, szer_dep)
+
+for (i in 1:ncol(szer_list)) {
+  print(colnames(szer_list)[i])
+  print(sprintf("graficzny - %s", test_graf(szer_list[, i])))
+  print(sprintf("formalny - %s", test_form(szer_list[, i])))
+}
+```
+
+Jak widzimy, dla szeregów o małym rozmiarze oba testy mają skłonność do pomyłek, lecz w przypadkach gdy testy dają różne wyniki, to test formalny poprawnie rozpoznaje biały szum. Podsumowując, dla 7 różnych szeregów test graficzny poprawnie rozpoznał 3 z nich, natomiast test formalny sklasyfikował poprawnie 6.
